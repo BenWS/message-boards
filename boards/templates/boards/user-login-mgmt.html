@@ -1,0 +1,11 @@
+{% if user.is_authenticated %}
+<ul>
+    <li>You are currently logged-in as <strong>{{ user.username }}</strong></a></li>
+    <li>Click <a href="{% url 'boards:log-off'%}">here</a> to sign-out</a></li>
+</ul>
+{% else %}
+<ul>
+    <li><a href="{% url 'boards:login' %}">User Login</a></li>
+    <li><a href="{% url 'boards:sign-up' %}">User Sign-up</a></li>
+</ul>
+{% endif %}

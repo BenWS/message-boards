@@ -1,0 +1,15 @@
+{% extends 'boards/base.html' %}
+{% block content %}
+<h3>{{ board_name|title }} > Edit Post</h3>
+<p>Editing Post #{{ post.id }}</p>
+<form method="post" action="{% url 'boards:edit-post/submit' board_name_urlFormatted topic.id post.id %}">
+	{% csrf_token %}
+	<label>Topic: </label><label>{{ topic.subject }}</label>
+	{% if in_reply_to_post_creator %}
+	<br><label>Reply to: </label><label>Post by {{ in_reply_to_post_creator }}, Subject: {{ in_reply_to_post_subject }}</label>
+	{% endif %}
+	<br><label>Post Subject: </label><input type="text" name="subject" id="subject" value="{{ post.subject }}">
+	<br><label>Message: </label><textarea id="message" name="message" rows="10",cols="40">{{ post.message }}</textarea>
+	<br><input type="submit" value="Submit">
+</form>
+{% endblock %}

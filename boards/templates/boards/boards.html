@@ -1,0 +1,26 @@
+{% extends 'boards/base.html' %}
+
+{% block remaining_content %} test {% endblock %}
+{% block content %}
+<div class="py-3">
+	<p> Welcome to the Backpacking Forum. You may view or view or create posts in any of the Message Boards listed below.</p><p>Please post in accordance to the <a href=""> site rules <a/></p>
+</div>
+<table>
+	<thead>
+		<tr>
+			<th>Board</th>
+			<th># of Topics</th>
+			<th>Last Post</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for board in boards %}
+		<tr>
+			<td><a href="{% url 'boards:topics' board.name_urlFormatted  %}">{{ board.name }}</a><br>{{ board.description }}</td>
+			<td><br>35</td>
+			<td>OutdoorsExplorer at 10:01 AM on 9/19/20</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

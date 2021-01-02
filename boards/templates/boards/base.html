@@ -1,0 +1,17 @@
+<html>
+    {% include 'boards/head.html'%}
+    <body>
+        {% include 'boards/header.html' %}
+        <div class="pl-3 mt-3" id="content">
+            {% if home_page %}
+            <h5>Forum Home</h5>
+            {% else %}
+            <h5><u><a href="{% url 'boards:index' %}">Forum Home</a></u> > {% block remaining_title %}{% endblock %}</h5>
+            {% endif %}
+            {% block content %}{% endblock %}
+            {% block footer %}
+                {% include 'boards/footer.html' %}
+            {% endblock %}
+        </div>
+    <body>
+</html>

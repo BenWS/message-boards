@@ -1,0 +1,12 @@
+{% extends 'boards/base.html' %}
+{% block remaining_title %}Contact an Admin{% endblock %}
+{% block content %}
+<p>Please submit your question and we'll get back to you soon.</p>
+<form method="get" action="index.html">
+	<label for="message">Message: </label>
+	<br><textarea name="message" id="message" rows="10" cols="30"></textarea>
+	<br><input type="submit"/>
+</form>
+{% block footer %}
+{% endblock %}
+{% endblock %}

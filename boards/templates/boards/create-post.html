@@ -1,0 +1,14 @@
+{% extends 'boards/base.html' %}
+{% block remaining_title %} <u><a href="{% url 'boards:topics' board_name_urlFormatted %}">{{ board_name|title }}</a></u>> Create New Post {% endblock %}
+{% block content %}
+<form method="post" action="{% url 'boards:create-post/submit' board_name_urlFormatted topic.id %}">
+	{% csrf_token %}
+	<label>Topic: </label><label>{{ topic.subject }}</label>
+	{% if post %}
+	<br><label>Reply to: </label><label>Post by {{ post.created_by }}, Subject: {{ post.subject }}</label>
+	{% endif %}
+	<br><label>Post Subject: </label><input type="text" name="subject" id="subject">
+	<br><label>Message: </label><textarea id="message" name="message" rows="10",cols="40"></textarea>
+	<br><input type="submit" value="Submit">
+</form>
+{% endblock %}

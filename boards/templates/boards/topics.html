@@ -1,0 +1,27 @@
+{% extends 'boards/base.html' %}
+
+{% block remaining_title %}{{ board_name|title }}{% endblock %}
+{% block content %}
+<p>You may either view a post below </p>
+<form action="{% url 'boards:create-topic' board_name_urlFormatted %}"><input type="submit" value="Create New Topic"></form>
+<table>
+	<thead>
+		<tr>
+			<th>Topic</th>
+			<th>Started By</th>
+			<th># of Posts</th>
+			<th>Last Post</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for topic in topics %}
+		<tr>
+			<td><a href="{% url 'boards:view-topic' board_name_urlFormatted topic.id %}">{{ topic.subject }}</a></td>
+			<td>{{ topic.created_by }}</td>
+			<td>{{ topic.count_posts }}</td>
+			<td>{{ topic.last_post_user }} at {{ topic.last_post_time }}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

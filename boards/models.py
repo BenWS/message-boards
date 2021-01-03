@@ -9,7 +9,7 @@ class Board(models.Model):
         return self.name
 
 class Topic(models.Model):
-    subject = models.CharField(max_length=30)
+    subject = models.CharField(max_length=50)
     board = models.ForeignKey(Board,null=False,on_delete=models.PROTECT,related_name='topics')
     created_by = models.ForeignKey(User,null=False, on_delete=models.PROTECT, related_name='topics_created')
     updated_by = models.ForeignKey(User,null=False, on_delete=models.PROTECT, related_name='topics_updated')

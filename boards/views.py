@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, HttpResponseRedirect, reverse
+from django.shortcuts import render, HttpResponseRedirect, reverse, get_object_or_404
 from django.db.models import F, CharField, Value
 from boards.models import *
 from django.contrib.auth.models import User
@@ -19,7 +19,7 @@ def home(request):
 def topics(request, board_name):
     board_name_urlFormatted = board_name
     board_name = board_name.replace('-', ' ')
-    board_id = Board.objects.get(name=board_name).id
+    board_id = get_object_or_404(Board, name=board_name).id
     topics = view_helpers.getTopicsByBoard(board_id)
     context = {
         'topics':topics
@@ -30,6 +30,8 @@ def topics(request, board_name):
 
 def viewTopic(request, topic_id, board_name):
     board_name = board_name.replace('-', ' ')
+    print("Breakpoint reached")
+    print(board_name)
     posts = getPostsByTopic(topic_id)
     topic = Topic.objects.get(id=topic_id)
     board = topic.board.__dict__

@@ -3,6 +3,15 @@ from django.db.models import Max
 
 temporary_user_id = 1
 
+def getQueryDictItem(request, key):
+    #NOTE: I should include handling for POST and other methods as well
+    try:
+        value = request.GET[key]
+    except KeyError:
+        value = None
+        return value
+
+
 def getTopicsByBoard(board_id):
     topics = Topic.objects.filter(board_id=board_id)
 
@@ -42,7 +51,7 @@ def getPostsByTopic(topic_id):
 
 
 def getPost(post_id):
-    if post_id=='':
+    if post_id=='' or post_id is None:
         return None
     else:
         post = Post.objects.get(id=post_id)

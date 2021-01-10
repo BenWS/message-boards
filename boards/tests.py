@@ -6,8 +6,38 @@ from django.contrib.auth import authenticate, login, logout
 from boards.models import Board, Topic, Post
 from boards import views
 
+
+class BaseTestClass(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
+        self.user = User.objects.create_user(username="TestUser", password="TestPassword")
+        self.topic = Topic.objects.create(
+            subject="Where are some good places to hike?",
+            board=self.board,
+            created_by=self.user,
+            updated_by=self.user
+        )
+        self.topic_alternate = Topic.objects.create(subject='TestSubject2'
+                                                    , created_by=self.user
+                                                    , updated_by=self.user
+                                                    , board=self.board)
+        self.post = Post.objects.create(
+            subject='Test Subject'
+            , message='Test Message'
+            , topic=self.topic
+            , created_by=self.user
+            , updated_by=self.user)
+
+        self.post_alternate = Post.objects.create(
+            subject='Test Subject'
+            , topic=self.topic_alternate
+            , message='Test Message'
+            , created_by=self.user
+            , updated_by=self.user)
+
 # Create your tests here.
-class HomeTests(TestCase):
+class HomeTests(BaseTestClass):
 
     def test_returns_200_status(self):
         client = Client()
@@ -19,7 +49,7 @@ class HomeTests(TestCase):
         response = client.get(reverse('boards:index'))
         self.assertEquals(response.resolver_match.func, views.home)
 
-class TopicTests(TestCase):
+class TopicTests(BaseTestClass):
     def setUp(self):
         board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
 
@@ -38,18 +68,7 @@ class TopicTests(TestCase):
         response = client.get(reverse("boards:topics", args=["Hiking Locations"]))
         self.assertEquals(response.resolver_match.func,views.topics)
 
-class ViewTopicTests(TestCase):
-    def setUp(self):
-        self.board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
-        self.user = User.objects.create(username="TestUser")
-        self.topic = Topic.objects.create(
-            subject="Where are some good places to hike?",
-            board=self.board,
-            created_by=self.user,
-            updated_by=self.user
-        )
-
-        self.client = Client()
+class ViewTopicTests(BaseTestClass):
 
     def test_returns_200_status(self):
         response = self.client.get(reverse("boards:view-topic", kwargs={"board_name": self.board.name, "topic_id": self.topic.id}))
@@ -58,7 +77,7 @@ class ViewTopicTests(TestCase):
 
     def test_returns_404_status(self):
         board_name_non_existent = "Board Name"
-        topic_id_non_existent = self.topic.id + 1
+        topic_id_non_existent = max(topic.id for topic in Topic.objects.all()) + 1
 
         response = self.client.get(reverse("boards:view-topic", kwargs={"board_name": self.board.name, "topic_id": topic_id_non_existent}))
         self.assertEquals(response.status_code, 404)
@@ -67,7 +86,7 @@ class ViewTopicTests(TestCase):
         response = self.client.get(reverse("boards:view-topic", kwargs={"board_name": self.board.name, "topic_id": self.topic.id}))
         self.assertEquals(response.resolver_match.func,views.viewTopic)
 
-class CreateTopicTests(TestCase):
+class CreateTopicTests(BaseTestClass):
 
     def setUp(self):
         self.client = Client()
@@ -100,40 +119,7 @@ class CreateTopicTests(TestCase):
         is_redirect_response_code = response.status_code >= 300 and response.status_code < 400
         self.assertTrue(is_redirect_response_code)
 
-class CreatePostTests(TestCase):
-
-    def setUp(self):
-        self.client = Client()
-        self.board = Board.objects.create(name='TestName', description='TestDescription')
-        self.user = User.objects.create_user(username='TestUser', password='TestPassword')
-        self.topic = Topic.objects.create(subject='TestSubject'
-                                          ,created_by=self.user
-                                          , updated_by=self.user
-                                          , board=self.board)
-        self.topic_alternate = Topic.objects.create(subject='TestSubject2'
-                                                    , created_by=self.user
-                                                    , updated_by=self.user,
-                                                    board=self.board)
-        self.post = Post.objects.create(
-            subject='Test Subject'
-            , message='Test Message'
-            , topic = self.topic
-            , created_by=self.user
-            , updated_by=self.user)
-
-        self.post_alternate = Post.objects.create(
-            subject='Test Subject'
-            , topic = self.topic_alternate
-            , message='Test Message'
-            , created_by=self.user
-            , updated_by=self.user)
-        '''
-        Create additional test topic B
-        Create additional test posts for test topic A
-         , and one for test topic B
-        Create test for in reply-to post not belonging to topic A (call it Post B)  
-        See that request to create post replying to Post B does not work for Topic A
-        '''
+class CreatePostTests(BaseTestClass):
 
     def test_correct_view(self):
         # test that URL resolves to intended view
@@ -154,9 +140,6 @@ class CreatePostTests(TestCase):
                                 , {'subject':'Test Subject','message':'Test Message', 'post_id': self.post_alternate.id})
 
         self.assertEquals(response.status_code, 406)
-
-        #check if the response status code is a 406
-        pass
 
     def test_returns_400_status(self):
         # test that URL returns a 404 HTTP status code for a non-existent topic
@@ -197,10 +180,15 @@ class CreatePostTests(TestCase):
 
         self.assertEquals(response.status_code, 401)
 
-class TestEditPost(TestCase):
+class TestEditPost(BaseTestClass):
 
     def setUp(self):
         pass
 
     # test that the URL matches the correct view
-    # test that the
+    # test that successful form submission returns redirect status code
+    # test that user can only access valid post ID within its parent topic and board
+        # otherwise 404
+    # test that user trying to access a non-existent board, topic, or post receives a 404
+    # test that the user cannot edit another user's post - only their own
+    # test that the user cannot submit a POST request editing

@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, HttpResponseRedirect, reverse, get_object_or_404
 from django.db.models import F, CharField, Value
 from boards.models import *
@@ -136,6 +136,12 @@ def editPost(request, board_name, topic_id, post_id):
     board = Board.objects.get(name=board_name)
     post = Post.objects.get(id=post_id)
     in_reply_to_post = None if post.in_reply_to is None else Post.objects.get(id=post.in_reply_to)
+
+    post_topic = post.topic
+    post_board = post_topic.board
+
+    if board != post_board or topic != post_topic:
+        return HttpResponseBadRequest('Bad Request - post does not belong to topic or board provided')
 
     context = {
         'current_username': User.objects.get(id=request.user.id).username,

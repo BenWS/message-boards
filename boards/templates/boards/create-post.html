@@ -9,6 +9,7 @@
 	{% endif %}
 	<br><label>Post Subject: </label><input type="text" name="subject" id="subject">
 	<br><label>Message: </label><textarea id="message" name="message" rows="10",cols="40"></textarea>
+	<br><input type="hidden" name="post_id" value="{{ post.id }}">
 	<br><input type="submit" value="Submit">
 </form>
 {% endblock %}

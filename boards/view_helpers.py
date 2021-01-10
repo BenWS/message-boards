@@ -6,10 +6,12 @@ temporary_user_id = 1
 def getQueryDictItem(request, key):
     #NOTE: I should include handling for POST and other methods as well
     try:
-        value = request.GET[key]
+        return request.GET[key]
     except KeyError:
-        value = None
-        return value
+        try:
+            return request.POST[key]
+        except KeyError:
+            return None
 
 
 def getTopicsByBoard(board_id):

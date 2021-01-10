@@ -3,7 +3,7 @@ from django.shortcuts import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
-from boards.models import Board, Topic
+from boards.models import Board, Topic, Post
 from boards import views
 
 # Create your tests here.
@@ -106,7 +106,34 @@ class CreatePostTests(TestCase):
         self.client = Client()
         self.board = Board.objects.create(name='TestName', description='TestDescription')
         self.user = User.objects.create_user(username='TestUser', password='TestPassword')
-        self.topic = Topic.objects.create(subject='TestSubject',created_by=self.user, updated_by=self.user, board=self.board)
+        self.topic = Topic.objects.create(subject='TestSubject'
+                                          ,created_by=self.user
+                                          , updated_by=self.user
+                                          , board=self.board)
+        self.topic_alternate = Topic.objects.create(subject='TestSubject2'
+                                                    , created_by=self.user
+                                                    , updated_by=self.user,
+                                                    board=self.board)
+        self.post = Post.objects.create(
+            subject='Test Subject'
+            , message='Test Message'
+            , topic = self.topic
+            , created_by=self.user
+            , updated_by=self.user)
+
+        self.post_alternate = Post.objects.create(
+            subject='Test Subject'
+            , topic = self.topic_alternate
+            , message='Test Message'
+            , created_by=self.user
+            , updated_by=self.user)
+        '''
+        Create additional test topic B
+        Create additional test posts for test topic A
+         , and one for test topic B
+        Create test for in reply-to post not belonging to topic A (call it Post B)  
+        See that request to create post replying to Post B does not work for Topic A
+        '''
 
     def test_correct_view(self):
         # test that URL resolves to intended view
@@ -117,6 +144,19 @@ class CreatePostTests(TestCase):
         #test that URL returns a 200 HTTP status code for an existing topic
         response = self.client.get(reverse('boards:create-post',kwargs={'board_name':self.board.name,'topic_id':self.topic.id}))
         self.assertEquals(response.status_code, 200)
+
+    def test_returns_406_status(self):
+        self.client.login(username='TestUser',password='TestPassword')
+
+        #client submits a post request for creating a new post
+        response = self.client.post(reverse('boards:create-post/submit'
+                                , kwargs={'board_name': self.board.name, 'topic_id': self.topic.id})
+                                , {'subject':'Test Subject','message':'Test Message', 'post_id': self.post_alternate.id})
+
+        self.assertEquals(response.status_code, 406)
+
+        #check if the response status code is a 406
+        pass
 
     def test_returns_400_status(self):
         # test that URL returns a 404 HTTP status code for a non-existent topic
@@ -145,7 +185,7 @@ class CreatePostTests(TestCase):
         # test that an authenticated form submission returns a status code in the 300 range
         self.client.login(username='TestUser',password='TestPassword')
         response = self.client.post(reverse('boards:create-post',kwargs={'board_name':self.board.name,'topic_id':self.topic.id})
-                                   , {'subject':'Test Subject','message':'Test Message'})
+                                   , {'subject':'Test Subject','message':'Test Message','post_id':self.post.id})
 
         self.assertEquals(response.status_code, 302)
 
@@ -156,3 +196,11 @@ class CreatePostTests(TestCase):
                 , {'subject':'Test Subject','message':'Test Message'})
 
         self.assertEquals(response.status_code, 401)
+
+class TestEditPost(TestCase):
+
+    def setUp(self):
+        pass
+
+    # test that the URL matches the correct view
+    # test that the

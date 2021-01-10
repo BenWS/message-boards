@@ -11,13 +11,15 @@ class BaseTestClass(TestCase):
     def setUp(self):
         self.client = Client()
         self.board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
-        self.user = User.objects.create_user(username="TestUser", password="TestPassword")
+        self.board_alternate = Board.objects.create(name="Alternate Test Board", description="This is a description of the board")
+        self.user = User.objects.create_user(username=self.test_username, password=self.test_password)
         self.topic = Topic.objects.create(
             subject="Where are some good places to hike?",
             board=self.board,
             created_by=self.user,
             updated_by=self.user
         )
+
         self.topic_alternate = Topic.objects.create(subject='TestSubject2'
                                                     , created_by=self.user
                                                     , updated_by=self.user
@@ -35,6 +37,12 @@ class BaseTestClass(TestCase):
             , message='Test Message'
             , created_by=self.user
             , updated_by=self.user)
+
+        self.test_password = 'Test User'
+        self.test_username = 'Test Password'
+        self.topic_id_non_existent = max(topic.id for topic in Topic.objects.all()) + 1
+        self.board_name_non_existent = 'Non-existent Board'
+        self.post_id_non_existent = max(post.id for post in Post.objects.all()) + 1
 
 # Create your tests here.
 class HomeTests(BaseTestClass):
@@ -183,12 +191,49 @@ class CreatePostTests(BaseTestClass):
 class TestEditPost(BaseTestClass):
 
     def setUp(self):
+        self.url_config_name = 'boards:edit-post'
+
+    def test_correct_view(self):
+        # test that the URL matches the correct view
+        login_result = self.client.login(username=self.test_username, password=self.test_password)
+        response = self.client.get(
+            reverse(self.url_config_name
+                    , kwargs={'board_name': self.board.name, 'topic_id': self.topic.id, 'post_id':self.post.id}))
+        self.assertEquals(response.resolver_match.func, views.editPost)
+
+
+    def test_get_post_unrelated_board_topic(self):
+        response_unrelated_topic = self.client.get(reverse(self.url_config_name
+                                           , kwargs={'board_name': self.board.name
+                                                     , 'topic_id': self.topic_alternate.id
+                                                     , 'post_id': self.post.id}))
+
+        response_unrelated_board = self.client.get(reverse(self.url_config_name
+                                           , kwargs={'board_name': self.board_alternate.name
+                                                     , 'topic_id': self.topic.id
+                                                     , 'post_id': self.post.id}))
+
+        view_returns_400_status = \
+            response_unrelated_board.status_code == 400 and response_unrelated_topic.status_code == 400
+
+        self.assertTrue(view_returns_400_status)
+
+    # test that successful form submission returns redirect status code
+
+    def test_get_non_existent_board_topic(self):
+        # test that user trying to access a non-existent board, topic, or post receives a 404
+        self.client.get(reverse(self.url_config_name
+                                , kwargs={'board_name':'Non-existent Board'
+                                          'topic_id:'}))
+
+    def test_get_edit_page_another_users_post(self):
+        # test that the user cannot access screen via GET request for editing another user's post - only their own
         pass
 
-    # test that the URL matches the correct view
-    # test that successful form submission returns redirect status code
-    # test that user can only access valid post ID within its parent topic and board
-        # otherwise 404
-    # test that user trying to access a non-existent board, topic, or post receives a 404
-    # test that the user cannot edit another user's post - only their own
-    # test that the user cannot submit a POST request editing
+    def test_submit_edit_another_users_post(self):
+        # test that the user cannot submit a POST request to edit another user's post
+        pass
+
+    def test_anonymous_user_redirected(self):
+        # test that an anonymous user is redirected to the user sign-in page
+        pass

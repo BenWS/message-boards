@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render, HttpResponseRedirect, reverse, get_object_or_404
 from django.db.models import F, CharField, Value
 from boards.models import *
@@ -132,19 +132,25 @@ def createPost(request, board_name, topic_id):
 def editPost(request, board_name, topic_id, post_id):
     board_name_urlFormatted = board_name
     board_name = board_name.replace('-', ' ')
-    topic = Topic.objects.get(id=topic_id)
-    board = Board.objects.get(name=board_name)
-    post = Post.objects.get(id=post_id)
+    topic = get_object_or_404(Topic, id=topic_id)
+    board = get_object_or_404(Board, name=board_name)
+    post = get_object_or_404(Post, id=post_id)
     in_reply_to_post = None if post.in_reply_to is None else Post.objects.get(id=post.in_reply_to)
 
     post_topic = post.topic
     post_board = post_topic.board
 
+    if request.user.is_anonymous:
+        return HttpResponseRedirect(reverse('boards:login'))
+
     if board != post_board or topic != post_topic:
         return HttpResponseBadRequest('Bad Request - post does not belong to topic or board provided')
 
+    if post.created_by != request.user:
+        return HttpResponseForbidden('User does not have permission to edit this post')
+
     context = {
-        'current_username': User.objects.get(id=request.user.id).username,
+        'current_username': request.user.username,
         'board_name': board_name,
         'board_name_urlFormatted': board_name,
         'topic': topic,

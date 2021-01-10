@@ -9,10 +9,14 @@ from boards import views
 
 class BaseTestClass(TestCase):
     def setUp(self):
+        self.test_password = 'Test Password'
+        self.test_username = 'Test User'
         self.client = Client()
         self.board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
         self.board_alternate = Board.objects.create(name="Alternate Test Board", description="This is a description of the board")
         self.user = User.objects.create_user(username=self.test_username, password=self.test_password)
+        self.client.login(username=self.test_username, password=self.test_password)
+        self.user_alternate = User.objects.create_user(username='Alternate User', password=self.test_password)
         self.topic = Topic.objects.create(
             subject="Where are some good places to hike?",
             board=self.board,
@@ -31,15 +35,20 @@ class BaseTestClass(TestCase):
             , created_by=self.user
             , updated_by=self.user)
 
-        self.post_alternate = Post.objects.create(
+        self.post_topic_alternate = Post.objects.create(
             subject='Test Subject'
             , topic=self.topic_alternate
             , message='Test Message'
-            , created_by=self.user
-            , updated_by=self.user)
+            , created_by=self.user_alternate
+            , updated_by=self.user_alternate)
 
-        self.test_password = 'Test User'
-        self.test_username = 'Test Password'
+        self.post_user_alternate = Post.objects.create(
+            subject='Test Subject'
+            , topic=self.topic
+            , message='Test Message'
+            , created_by=self.user_alternate
+            , updated_by=self.user_alternate)
+
         self.topic_id_non_existent = max(topic.id for topic in Topic.objects.all()) + 1
         self.board_name_non_existent = 'Non-existent Board'
         self.post_id_non_existent = max(post.id for post in Post.objects.all()) + 1
@@ -140,12 +149,14 @@ class CreatePostTests(BaseTestClass):
         self.assertEquals(response.status_code, 200)
 
     def test_returns_406_status(self):
-        self.client.login(username='TestUser',password='TestPassword')
+        self.client.login(username=self.test_username,password=self.test_password)
 
-        #client submits a post request for creating a new post
+        #client submits a post request for creating a new post,
+        # and attempt for replying to post not in topic should return 'Non Allowed' response
+
         response = self.client.post(reverse('boards:create-post/submit'
                                 , kwargs={'board_name': self.board.name, 'topic_id': self.topic.id})
-                                , {'subject':'Test Subject','message':'Test Message', 'post_id': self.post_alternate.id})
+                                    , {'subject':'Test Subject','message':'Test Message', 'post_id': self.post_topic_alternate.id})
 
         self.assertEquals(response.status_code, 406)
 
@@ -174,7 +185,7 @@ class CreatePostTests(BaseTestClass):
 
     def test_form_submission_redirects(self):
         # test that an authenticated form submission returns a status code in the 300 range
-        self.client.login(username='TestUser',password='TestPassword')
+        self.client.login(username=self.test_username,password=self.test_password)
         response = self.client.post(reverse('boards:create-post',kwargs={'board_name':self.board.name,'topic_id':self.topic.id})
                                    , {'subject':'Test Subject','message':'Test Message','post_id':self.post.id})
 
@@ -182,6 +193,7 @@ class CreatePostTests(BaseTestClass):
 
     def test_form_submission_unauthorized(self):
         #test that an unauthenticated form submission returns a status code of 401
+        self.client.logout()
         response = self.client.post(
             reverse('boards:create-post', kwargs={'board_name': self.board.name, 'topic_id': self.topic.id})
                 , {'subject':'Test Subject','message':'Test Message'})
@@ -192,15 +204,31 @@ class TestEditPost(BaseTestClass):
 
     def setUp(self):
         self.url_config_name = 'boards:edit-post'
+        super().setUp()
 
     def test_correct_view(self):
         # test that the URL matches the correct view
-        login_result = self.client.login(username=self.test_username, password=self.test_password)
         response = self.client.get(
             reverse(self.url_config_name
                     , kwargs={'board_name': self.board.name, 'topic_id': self.topic.id, 'post_id':self.post.id}))
         self.assertEquals(response.resolver_match.func, views.editPost)
 
+    def test_edit_page_200_status(self):
+        response = self.client.get(reverse(self.url_config_name
+                                           , kwargs={'board_name': self.board.name
+                                           , 'topic_id': self.topic.id
+                                           , 'post_id': self.post.id}))
+
+        self.assertEquals(response.status_code, 200)
+
+    def test_form_submission_redirects(self):
+        response = self.client.post(reverse(self.url_config_name + '/submit'
+                                            , kwargs={'board_name': self.board.name
+                                            , 'topic_id': self.topic.id
+                                            , 'post_id': self.post.id})
+                                    , {'subject':'Test Subject', 'message':'Test Message'})
+
+        self.assertEquals(response.status_code, 302)
 
     def test_get_post_unrelated_board_topic(self):
         response_unrelated_topic = self.client.get(reverse(self.url_config_name
@@ -214,7 +242,8 @@ class TestEditPost(BaseTestClass):
                                                      , 'post_id': self.post.id}))
 
         view_returns_400_status = \
-            response_unrelated_board.status_code == 400 and response_unrelated_topic.status_code == 400
+            response_unrelated_board.status_code == 400 \
+            and response_unrelated_topic.status_code == 400
 
         self.assertTrue(view_returns_400_status)
 
@@ -222,18 +251,64 @@ class TestEditPost(BaseTestClass):
 
     def test_get_non_existent_board_topic(self):
         # test that user trying to access a non-existent board, topic, or post receives a 404
-        self.client.get(reverse(self.url_config_name
-                                , kwargs={'board_name':'Non-existent Board'
-                                          'topic_id:'}))
+        response_non_existent_board = self.client.get(reverse(self.url_config_name
+                                , kwargs={'board_name':self.board_name_non_existent
+                                          , 'topic_id':self.topic.id
+                                          , 'post_id':self.post.id}))
+
+        response_non_existent_topic = self.client.get(reverse(self.url_config_name
+                              , kwargs={'board_name': self.board.name
+                                        , 'topic_id': self.topic_id_non_existent
+                                        , 'post_id': self.post.id}))
+
+        response_non_existent_post = self.client.get(reverse(self.url_config_name
+                            , kwargs={'board_name': self.board.name
+                                    , 'topic_id': self.topic.id
+                                    , 'post_id': self.post_id_non_existent}))
+
+        if response_non_existent_post.status_code == 404 \
+                and response_non_existent_topic.status_code == 404 \
+                and response_non_existent_board.status_code == 404:
+
+            non_existent_returns_404 = True
+
+        self.assertTrue(non_existent_returns_404)
 
     def test_get_edit_page_another_users_post(self):
         # test that the user cannot access screen via GET request for editing another user's post - only their own
-        pass
+        response = self.client.get(reverse(self.url_config_name
+                                , kwargs = {'board_name':self.board.name
+                                            , 'topic_id': self.topic.id
+                                            , 'post_id':self.post_user_alternate.id}))
+
+        self.assertEquals(response.status_code, 403)
 
     def test_submit_edit_another_users_post(self):
         # test that the user cannot submit a POST request to edit another user's post
-        pass
+        response = self.client.post(reverse(self.url_config_name + '/submit'
+                                            , kwargs={'board_name': self.board.name
+                                            , 'topic_id': self.topic.id
+                                            , 'post_id': self.post_user_alternate.id})
+                                    , {'subject':'Test Subject', 'message':'Test Message'})
+
+        self.assertEquals(response.status_code, 403)
 
     def test_anonymous_user_redirected(self):
+        self.client.logout()
         # test that an anonymous user is redirected to the user sign-in page
-        pass
+        response_get_request = self.client.get(reverse(self.url_config_name
+                                                    , kwargs={'board_name': self.board.name
+                                                    , 'topic_id': self.topic.id
+                                                    , 'post_id': self.post.id}))
+
+        response_post_request = self.client.post(reverse(self.url_config_name + '/submit'
+                                                    , kwargs={'board_name': self.board.name
+                                                    , 'topic_id': self.topic.id
+                                                    , 'post_id': self.post.id})
+                                                 , {'message':'Test Message', 'subject':'Test Subject'})
+
+        response_valid = \
+            response_get_request.status_code == 302 \
+            and response_post_request.status_code == 302
+
+        self.assertTrue(response_valid)

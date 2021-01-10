@@ -312,3 +312,18 @@ class TestEditPost(BaseTestClass):
             and response_post_request.status_code == 302
 
         self.assertTrue(response_valid)
+
+class ContactAdminTests(BaseTestClass):
+    def setUp(self):
+        super().setUp()
+        self.url_config_name = 'boards:contact-admin'
+
+    # test that URL resolves to correct view
+    def test_returns_correct_view(self):
+        response = self.client.get(reverse(self.url_config_name))
+        self.assertEquals(response.resolver_match.func, views.contactAdmin)
+
+    # test that page returns 200 status
+    def test_returns_200_status(self):
+        response = self.client.get(reverse(self.url_config_name))
+        self.assertEquals(response.status_code, 200)

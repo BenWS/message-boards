@@ -11,10 +11,11 @@ class BaseTestClass(TestCase):
     def setUp(self):
         self.test_password = 'Test Password'
         self.test_username = 'Test User'
+        self.test_email = 'testemail@test.com'
         self.client = Client()
         self.board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
         self.board_alternate = Board.objects.create(name="Alternate Test Board", description="This is a description of the board")
-        self.user = User.objects.create_user(username=self.test_username, password=self.test_password)
+        self.user = User.objects.create_user(username=self.test_username, password=self.test_password, email=self.test_email)
         self.client.login(username=self.test_username, password=self.test_password)
         self.user_alternate = User.objects.create_user(username='Alternate User', password=self.test_password)
         self.topic = Topic.objects.create(
@@ -327,3 +328,48 @@ class ContactAdminTests(BaseTestClass):
     def test_returns_200_status(self):
         response = self.client.get(reverse(self.url_config_name))
         self.assertEquals(response.status_code, 200)
+
+class UserSignUpTests(BaseTestClass):
+
+    def setUp(self):
+        self.url_config_name = 'boards:sign-up'
+        self.url = reverse(self.url_config_name)
+        super().setUp()
+
+    def test_successful_submission_returns_302(self):
+        # test that successful submission returns 302 status
+        response = self.client.post(self.url
+                         , {'username': self.user.username
+                            , 'email': self.user.email
+                            , 'password': self.user.password
+                            , 'confirm_password': self.user.password})
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_successful_submission_redirects_home_page(self):
+        # test that successful submission redirects user to Home Page
+        response = self.client.post(self.url
+                                    , {'username': self.user.username
+                                        , 'email': self.user.email
+                                        , 'password': self.user.password
+                                        , 'confirm_password': self.user.password})
+
+        print("Hello world!")
+
+
+    # test that successful submission logs the user in
+    # test that unsuccessful submission redirects the user to the same page
+    # test that URL resolves to intended view function
+    pass
+
+
+class UserLoginTests(BaseTestClass):
+    # test that successful form redirects user
+    # test that unsuccessful form submission refreshes the page with 'invalid login' message
+    # test that URL resolves to intended view function
+    pass
+
+class UserLogoffTests(BaseTestClass):
+    # test that successful submission returns 302 status
+    # test that successful submission returns user with anonymous verbiage
+    pass

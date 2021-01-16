@@ -178,6 +178,11 @@ def userSignup(request):
     if request.method == 'GET':
         return render(request, 'boards/sign-up.html')
     elif request.method == 'POST':
+        #check that username or email doesn't already exist
+            #reject request if so
+            #process request and create user if not
+
+        #create user if
         User.objects.create_user(
             username=request.POST['username'],
             email=request.POST['email'],

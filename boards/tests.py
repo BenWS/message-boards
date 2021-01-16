@@ -359,20 +359,89 @@ class UserSignUpTests(BaseTestClass):
 
         self.assertEquals(response.status_code, 302)
 
-    def test_unsuccessful_submission_redirects_same_page(self):
-        # test that unsuccessful submission redirects the user to the same page
-        response = self.client
+    def test_submission_existing_user_returns_error(self):
 
-    # test that URL resolves to intended view function
+        # test that sign-up submission for existing page returns an error
+        response = self.client.post(self.url
+                                    , {'username': self.user.username
+                                        , 'email': self.user.email
+                                        , 'password': self.user.password
+                                        , 'confirm_password': self.user.password})
+
+        error_string = 'Username or email already associated with existing account'
+        string_found = error_string in str(response.content)
+
+        self.assertTrue(string_found)
+
+    def test_correct_view(self):
+        # test that URL resolves to intended view function
+        response = self.client.get(self.url)
+        self.assertEquals(response.resolver_match.func, views.userSignup)
+
+
+    def test_submission_redirects(self):
+        # test that successful submission redirects user to Home Page
+        response = self.client.post(self.url
+                                    , {'username': self.new_username
+                                        , 'email': self.new_email
+                                        , 'password': self.new_password
+                                        , 'confirm_password': self.new_password})
+
+        self.assertEquals(response.status_code,302)
 
 
 class UserLoginTests(BaseTestClass):
-    # test that successful form redirects user
-    # test that unsuccessful form submission refreshes the page with 'invalid login' message
-    # test that URL resolves to intended view function
-    pass
+
+    def setUp(self):
+        super().setUp()
+        self.non_existent_username = 'Non-existent User'
+        self.non_existent_password = 'Non-existent Password'
+        self.url = reverse('boards:login')
+
+    def test_successful_form_redirects(self):
+        # test that submission for existing user redirects
+        response = self.client.post(self.url
+                                    , {'username': self.user.username
+                                        , 'password': self.user.password})
+
+        self.assertEquals(response.status_code, 302)
+
+    def test_unsuccessful_form_displays_error(self):
+        # test that unsuccessful form submission refreshes the page with 'invalid login' message
+        response = self.client.post(self.url
+                                    , {'username': self.non_existent_username
+                                        , 'password': self.non_existent_password})
+
+        error_string = 'Invalid username or password. Please try again.'
+        error_in_response = error_string in str(response.content)
+
+        self.assertTrue(error_in_response)
+
+    def test_correct_view(self):
+        # test that URL resolves to intended view function
+        response = self.client.get(self.url)
+        self.assertEquals(response.resolver_match.func, views.userLogin)
+
 
 class UserLogoffTests(BaseTestClass):
-    # test that successful submission returns 302 status
-    # test that successful submission returns user with anonymous verbiage
-    pass
+    def setUp(self):
+        super().setUp()
+        self.url = reverse('boards:log-off')
+
+
+    def test_redirects(self):
+        # test that successful submission returns 302 status
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 302)
+
+    def test_anonymous_verbiage(self):
+        # test that successful submission returns user with anonymous verbiage
+        response = self.client.get(self.url)
+        anonymous_verbiage = 'Not logged-in'
+        anonymous_verbiage_in_response = anonymous_verbiage in str(response.content)
+        self.assertTrue(anonymous_verbiage_in_response)
+
+    def test_correct_function(self):
+        #test correct function
+        response = self.client.get(self.url)
+        self.assertEquals(response.resolver_match.func,views.userLogoff)

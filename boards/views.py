@@ -178,31 +178,34 @@ def userSignup(request):
     if request.method == 'GET':
         return render(request, 'boards/sign-up.html')
     elif request.method == 'POST':
-        #check that username or email doesn't already exist
-            #reject request if so
-            #process request and create user if not
+        len_users_username = len(User.objects.filter(username=request.POST['username']))
+        len_users_email = len(User.objects.filter(username=request.POST['email']))
 
-        #create user if
-        User.objects.create_user(
-            username=request.POST['username'],
-            email=request.POST['email'],
-            password=request.POST['password']
-        )
-        return HttpResponseRedirect(reverse('boards:index'))
+        if len_users_username > 0 or len_users_email > 0:
+            error = 'Username or email already associated with existing account'
+            return render(request,'boards/sign-up.html', context={'error':error})
+
+        else:
+            User.objects.create_user(
+                username=request.POST['username'],
+                email=request.POST['email'],
+                password=request.POST['password']
+            )
+
+            return HttpResponseRedirect(reverse('boards:index'))
 
 
 def userLogin(request):
-    referring_url = request.META['HTTP_REFERER']
-    parsed_referring_url = urlparse(referring_url)
-    referring_path = parsed_referring_url.path
-
     if request.method == 'GET':
         return render(request, 'boards/login.html')
     elif request.method == 'POST':
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is not None:
             login(request, user)
-        return HttpResponseRedirect(reverse('boards:index'))
+            return HttpResponseRedirect(reverse('boards:index'))
+        else:
+            error_string = 'Invalid username or password. Please try again.'
+            return render(request, 'boards/login.html',context={'error_string':error_string})
 
 
 def userLogoff(request):

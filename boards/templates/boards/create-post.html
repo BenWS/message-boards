@@ -1,7 +1,7 @@
 {% extends 'boards/base.html' %}
-{% block remaining_title %} <u><a href="{% url 'boards:topics' board_name_urlFormatted %}">{{ board_name|title }}</a></u>> Create New Post {% endblock %}
+{% block remaining_title %} <u><a href="{% url 'boards:topics' board_name_url_formatted %}">{{ board_name|title }}</a></u>> Create New Post {% endblock %}
 {% block content %}
-<form method="post" action="{% url 'boards:create-post/submit' board_name_urlFormatted topic.id %}">
+<form method="post" action="{% url 'boards:create-post/submit' board_name_url_formatted topic.id %}">
 	{% csrf_token %}
 	<label>Topic: </label><label>{{ topic.subject }}</label>
 	{% if post %}

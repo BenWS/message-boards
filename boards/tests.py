@@ -54,12 +54,10 @@ class BaseTestClass(TestCase):
         self.board_name_non_existent = 'Non-existent Board'
         self.post_id_non_existent = max(post.id for post in Post.objects.all()) + 1
 
-# Create your tests here.
 class HomeTests(BaseTestClass):
 
     def test_returns_200_status(self):
-        client = Client()
-        response = client.get(reverse('boards:index'))
+        response = self.client.get(reverse('boards:index'))
         self.assertEquals(response.status_code,200)
 
     def test_correct_view(self):
@@ -190,6 +188,10 @@ class CreatePostTests(BaseTestClass):
         response = self.client.post(reverse('boards:create-post',kwargs={'board_name':self.board.name,'topic_id':self.topic.id})
                                    , {'subject':'Test Subject','message':'Test Message','post_id':self.post.id})
 
+        self.assertEquals(response.status_code, 302)
+
+    def test_redirects_anonymous(self):
+        response = self.client.get(reverse('boards:create-post', kwargs={'board_name': self.board.name, 'topic_id': self.topic.id}))
         self.assertEquals(response.status_code, 302)
 
     def test_form_submission_unauthorized(self):

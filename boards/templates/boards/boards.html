@@ -16,7 +16,7 @@
 	<tbody>
 		{% for board in boards %}
 		<tr>
-			<td><a href="{% url 'boards:topics' board.name_urlFormatted  %}">{{ board.name }}</a><br>{{ board.description }}</td>
+			<td><a href="{% url 'boards:topics' board.name_url_formatted  %}">{{ board.name }}</a><br>{{ board.description }}</td>
 			<td><br>35</td>
 			<td>OutdoorsExplorer at 10:01 AM on 9/19/20</td>
 		</tr>

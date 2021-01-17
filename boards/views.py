@@ -11,33 +11,26 @@ from boards import view_helpers
 
 
 def home(request):
-    boards = Board.objects.all().values()
-    for board in boards:
-        board['name_urlFormatted'] = board['name'].replace(' ', '-').lower()
+    boards = Board.objects.all()
     return render(request, 'boards/boards.html'
                   , context={'boards': boards, 'home_page': True})
 
 
 def topics(request, board_name):
-    board_name_urlFormatted = board_name
-    board_name = board_name.replace('-', ' ')
-    board_id = get_object_or_404(Board, name=board_name).id
-    topics = view_helpers.getTopicsByBoard(board_id)
+    board = get_object_or_404(Board, name=Board.get_name_from_url_format(board_name))
+    topics = view_helpers.getTopicsByBoard(board.id)
     context = {
         'topics': topics
-        , 'board_name_urlFormatted': board_name_urlFormatted
-        , 'board_name': board_name
+        , 'board_name_url_formatted': board.name_url_formatted
+        , 'board_name': board.name
     }
     return render(request, 'boards/topics.html', context=context)
 
 
 def viewTopic(request, topic_id, board_name):
-    board_name = board_name.replace('-', ' ')
-    board = get_object_or_404(Board, name=board_name)
+    board = get_object_or_404(Board, name=Board.get_name_from_url_format(board_name))
     topic = get_object_or_404(Topic, id=topic_id)
     posts = getPostsByTopic(topic_id)
-    board = topic.board.__dict__
-    board['name_urlFormatted'] = board['name'].replace(' ', '-').lower()
     context = {
         'posts': posts,
         'topic': topic,
@@ -48,13 +41,12 @@ def viewTopic(request, topic_id, board_name):
 
 
 def createTopic(request, board_name):
-    board_name_urlFormatted = board_name
-    board_name = board_name.replace('-', ' ')
+    board = get_object_or_404(Board, name=Board.get_name_from_url_format(board_name))
     if request.method == 'GET':
         context = {
             'current_username': request.user.username,
-            'board_name': board_name,
-            'board_name_urlFormatted': board_name.replace(' ', '-')
+            'board_name': board.name,
+            'board_name_url_formatted': board.name_url_formatted
         }
 
         if request.user.is_anonymous:
@@ -80,17 +72,20 @@ def createTopic(request, board_name):
             subject=request.POST['subject'],
             message=request.POST['message']
         )
-        return HttpResponseRedirect(reverse('boards:topics', kwargs={'board_name': board_name_urlFormatted}))
+        return HttpResponseRedirect(reverse('boards:topics', kwargs={'board_name': board.name_url_formatted}))
 
 
 def createPost(request, board_name, topic_id):
     board_name = board_name.replace('-', ' ')
-    board = get_object_or_404(Board, name=board_name)
+    board = get_object_or_404(Board, name=Board.get_name_from_url_format(board_name))
     topic = get_object_or_404(Topic, id=topic_id)
 
     # http://localhost:8000/boards/hiking-locations/topic/3/create-post?post_id=2
     if request.method == 'GET':
         # NOTE: there should be handling for an attempt to reply to a post not in topic
+
+        if request.user.is_anonymous:
+            return HttpResponseRedirect(reverse('boards:login'))
 
         in_reply_to_post = view_helpers.getPost(view_helpers.getQueryDictItem(request, 'post_id'))
 
@@ -98,7 +93,7 @@ def createPost(request, board_name, topic_id):
             'current_username': request.user.username,
             'post': in_reply_to_post,
             'board_name': board_name,
-            'board_name_urlFormatted': board_name.replace(' ', '-'),
+            'board_name_url_formatted': board.name_url_formatted,
             'topic': topic
         }
 
@@ -130,10 +125,8 @@ def createPost(request, board_name, topic_id):
 
 
 def editPost(request, board_name, topic_id, post_id):
-    board_name_urlFormatted = board_name
-    board_name = board_name.replace('-', ' ')
     topic = get_object_or_404(Topic, id=topic_id)
-    board = get_object_or_404(Board, name=board_name)
+    board = get_object_or_404(Board, name=Board.get_name_from_url_format(board_name))
     post = get_object_or_404(Post, id=post_id)
     in_reply_to_post = None if post.in_reply_to is None else Post.objects.get(id=post.in_reply_to)
 
@@ -151,8 +144,8 @@ def editPost(request, board_name, topic_id, post_id):
 
     context = {
         'current_username': request.user.username,
-        'board_name': board_name,
-        'board_name_urlFormatted': board_name,
+        'board_name': board.name,
+        'board_name_url_formatted': board.name_url_formatted,
         'topic': topic,
         'post': post,
         'in_reply_to_post_creator': in_reply_to_post.created_by.username if post.in_reply_to else None,
@@ -167,7 +160,7 @@ def editPost(request, board_name, topic_id, post_id):
         post.save()
 
         return HttpResponseRedirect(
-            reverse('boards:view-topic', kwargs={'board_name': board_name_urlFormatted, 'topic_id': topic_id}))
+            reverse('boards:view-topic', kwargs={'board_name': board.name_url_formatted, 'topic_id': topic_id}))
 
 
 def contactAdmin(request):

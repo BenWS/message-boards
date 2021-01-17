@@ -3,7 +3,7 @@
 {% block remaining_title %}{{ board_name|title }}{% endblock %}
 {% block content %}
 <p>You may either view a post below </p>
-<form action="{% url 'boards:create-topic' board_name_urlFormatted %}"><input type="submit" value="Create New Topic"></form>
+<form action="{% url 'boards:create-topic' board_name_url_formatted %}"><input type="submit" value="Create New Topic"></form>
 <table>
 	<thead>
 		<tr>
@@ -16,7 +16,7 @@
 	<tbody>
 		{% for topic in topics %}
 		<tr>
-			<td><a href="{% url 'boards:view-topic' board_name_urlFormatted topic.id %}">{{ topic.subject }}</a></td>
+			<td><a href="{% url 'boards:view-topic' board_name_url_formatted topic.id %}">{{ topic.subject }}</a></td>
 			<td>{{ topic.created_by }}</td>
 			<td>{{ topic.count_posts }}</td>
 			<td>{{ topic.last_post_user }} at {{ topic.last_post_time }}</td>

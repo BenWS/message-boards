@@ -5,8 +5,17 @@ class Board(models.Model):
     name = models.CharField(max_length=30, unique=True)
     description = models.CharField(max_length=60)
 
+    def get_name_url_formatted(self):
+        return self.name.replace(' ', '-').lower()
+
+    def get_name_from_url_format(url_formatted_name):
+        return url_formatted_name.replace('-',' ').title()
+
+    name_url_formatted = property(get_name_url_formatted)
+
     def __str__(self):
         return self.name
+
 
 class Topic(models.Model):
     subject = models.CharField(max_length=50)

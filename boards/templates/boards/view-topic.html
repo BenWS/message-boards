@@ -1,11 +1,11 @@
 {% extends 'boards/base.html '%}
 {% block remaining_title%}
-	<u><a href="{% url 'boards:topics' board.name_urlFormatted %}">{{ board.name }}</a></u> > {{ topic.subject }}
+	<u><a href="{% url 'boards:topics' board.name_url_formatted %}">{{ board.name }}</a></u> > {{ topic.subject }}
 {% endblock %}
 {% block content %}
 <form method="get"
 	  class="mt-4"
-	  action="{% url 'boards:create-post' board.name_urlFormatted topic.id %}">
+	  action="{% url 'boards:create-post' board.name_url_formatted topic.id %}">
 	<input type="hidden" name="post_id" value="">
 	<input type="submit" value="Reply">
 </form>
@@ -17,10 +17,10 @@
 			<br>Subject: {{ post.subject }}</p>
 		</div>
 		<div class="user-post-controls" style="display:inline-block; position: absolute; top:0px; right:0px">
-			<form method="get" action="{% url 'boards:edit-post' board.name_urlFormatted topic.id post.id %}" style="display:inline-block">
+			<form method="get" action="{% url 'boards:edit-post' board.name_url_formatted topic.id post.id %}" style="display:inline-block">
 				<input type="submit" value="Edit">
 			</form>
-			<form method="get" action="{% url 'boards:create-post' board.name_urlFormatted topic.id %}" style="display:inline-block">
+			<form method="get" action="{% url 'boards:create-post' board.name_url_formatted topic.id %}" style="display:inline-block">
 				<input type="submit" value="Reply">
 				<input type="hidden" name="post_id" value="{{ post.id }}">
 			</form>

@@ -2,7 +2,7 @@
 {% block content %}
 <h3>{{ board_name|title }} > Edit Post</h3>
 <p>Editing Post #{{ post.id }}</p>
-<form method="post" action="{% url 'boards:edit-post/submit' board_name_urlFormatted topic.id post.id %}">
+<form method="post" action="{% url 'boards:edit-post/submit' board_name_url_formatted topic.id post.id %}">
 	{% csrf_token %}
 	<label>Topic: </label><label>{{ topic.subject }}</label>
 	{% if in_reply_to_post_creator %}

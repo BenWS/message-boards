@@ -32,7 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'boards'
+    'boards',
+    'accounts',
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [
@@ -73,7 +75,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'sql_server.pyodbc',
         'NAME': 'MessageBoards',
-        'HOST': 'DESKTOP-EA3GGH4\SQLSERVER17',
+        'HOST': 'DESKTOP-EA3GGH4',
         'OPTIONS': {
             'driver':'ODBC Driver 13 for SQL Server'
         }

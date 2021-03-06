@@ -22,7 +22,6 @@ urlpatterns = [
     path('<str:board_name>/topic/<int:topic_id>/edit-post/<int:post_id>/submit',views.editPost,name='edit-post/submit'),
     #/contact-admin
     path('contact-admin',views.contactAdmin,name='contact-admin'),
-    path('sign-up', views.userSignup, name='sign-up'),
     path('log-in', views.userLogin, name='login'),
     path('log-off', views.userLogoff, name='log-off')
 ]

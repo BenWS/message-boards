@@ -1,11 +1,11 @@
 {% extends 'boards/base.html' %}
+{% load widget_tweaks %}
 
 {% block remaining_title %}<u><a href="{% url 'boards:topics' board_name_url_formatted %}">{{ board_name|title }}</a></u> > Create New Topic{% endblock %}
 {% block content %}
-<form method='POST' action="{% url 'boards:create-topic/submit' board_name_url_formatted %}">
+<form method='POST' action="{% url 'boards:create-topic/submit' board_name_url_formatted %}" novalidate>
 	{% csrf_token %}
-	<label for="subject">Subject: <label/><input name="subject" id="subject" type="text"/>
-		<br/><label for="message">Message: <label/> <textarea name="message" id="message" rows="8" cols="50"/></textarea>
-	<br/><input type="submit"/>
+	{% include 'boards/form.html' %}
+	<br><input type="submit">
 </form>
 {% endblock %}

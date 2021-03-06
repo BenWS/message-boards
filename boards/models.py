@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 class Board(models.Model):
     name = models.CharField(max_length=30, unique=True)
-    description = models.CharField(max_length=60)
+    description = models.CharField(max_length=200)
 
     def get_name_url_formatted(self):
         return self.name.replace(' ', '-').lower()
@@ -26,7 +26,7 @@ class Topic(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class Post(models.Model):
-    subject = models.CharField(max_length=30)
+    subject = models.CharField(max_length=50)
     message = models.CharField(max_length=1000)
     topic = models.ForeignKey(Topic,null=False,on_delete=models.PROTECT,related_name='topics')
     created_by = models.ForeignKey(User, null=False,on_delete=models.PROTECT, related_name='posts_created')

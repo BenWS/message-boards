@@ -8,10 +8,7 @@
 	{% endif %}
 	<form method="post" action="{% url 'boards:login' %}">
 		{% csrf_token %}
-		<label for="username">User Name: </label>
-		<br><input id="username" name="username" type="text">
-		<br><label for="password">Password: </label>
-		<br><input name="password" id="password" type="password">
+		{% include 'boards/form.html' %}
 		<br><input type="submit"/>
 	</form>
 </html>

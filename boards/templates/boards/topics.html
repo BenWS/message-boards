@@ -18,7 +18,7 @@
 		<tr>
 			<td><a href="{% url 'boards:view-topic' board_name_url_formatted topic.id %}">{{ topic.subject }}</a></td>
 			<td>{{ topic.created_by }}</td>
-			<td>{{ topic.count_posts }}</td>
+			<td>{{ topic.posts.count }}</td>
 			<td>{{ topic.last_post_user }} at {{ topic.last_post_time }}</td>
 		</tr>
 		{% endfor %}

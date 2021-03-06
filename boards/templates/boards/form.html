@@ -1,0 +1,38 @@
+{% load widget_tweaks %}
+
+{% for field in form.hidden_fields %}
+{{ field }}
+{% endfor %}
+{% for field in form.visible_fields %}
+<div class="field-wrapper">
+    <!--
+    Resources:
+
+     - 'invalid-feedback' class and Bootstrap Form validation: https://getbootstrap.com/docs/5.0/forms/validation/
+     - Django Form class form fields: https://docs.djangoproject.com/en/3.0/topics/forms/#looping-over-the-form-s-fields
+     - Basic example for Bootstrap form structure: https://getbootstrap.com/docs/5.0/forms/overview/#overview
+
+    -->
+    {{ field.label_tag }}
+    {% if form.is_bound %}
+        {% if field.errors %}
+            {% render_field field class='form-control is-invalid' %}
+            {% for error in field.errors%}
+            <div class="invalid-feedback">
+                {{ error }}
+            </div>
+            {% endfor %}
+        {% else %}
+            {% render_field field class='form-control is-valid' %}
+            {{ field.help_text }}
+        {% endif %}
+    {% else %}
+        {% render_field field class='form-control' %}
+        {% if field.help_text %}
+        <small class="form-text text-muted">
+            {{ field.help_text }}
+        </small>
+        {% endif %}
+    {% endif %}
+</div>
+{% endfor %}

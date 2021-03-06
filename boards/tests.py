@@ -5,12 +5,12 @@ from django.contrib.auth import authenticate, login, logout
 
 from boards.models import Board, Topic, Post
 from boards import views
-
+from boards.forms import CreateTopicForm
 
 class BaseTestClass(TestCase):
     def setUp(self):
-        self.test_password = 'Test Password'
-        self.test_username = 'Test User'
+        self.test_password = 'TestPassword'
+        self.test_username = 'TestUser'
         self.test_email = 'testemail@test.com'
         self.client = Client()
         self.board = Board.objects.create(name="Hiking Locations", description="This is a description of the board")
@@ -191,6 +191,7 @@ class CreatePostTests(BaseTestClass):
         self.assertEquals(response.status_code, 302)
 
     def test_redirects_anonymous(self):
+        self.client.logout()
         response = self.client.get(reverse('boards:create-post', kwargs={'board_name': self.board.name, 'topic_id': self.topic.id}))
         self.assertEquals(response.status_code, 302)
 
@@ -331,67 +332,6 @@ class ContactAdminTests(BaseTestClass):
         response = self.client.get(reverse(self.url_config_name))
         self.assertEquals(response.status_code, 200)
 
-class UserSignUpTests(BaseTestClass):
-
-    def setUp(self):
-        self.url_config_name = 'boards:sign-up'
-        self.url = reverse(self.url_config_name)
-        self.new_username = 'New User'
-        self.new_password = 'New Password'
-        self.new_email = 'newemail@email.com'
-        super().setUp()
-
-    def test_successful_submission_returns_302(self):
-        # test that successful submission returns 302 status
-        response = self.client.post(self.url
-                         , {'username': self.new_username
-                            , 'email': self.new_email
-                            , 'password': self.new_password
-                            , 'confirm_password': self.new_password})
-
-        self.assertEquals(response.status_code, 302)
-
-    def test_successful_submission_redirects_home_page(self):
-        # test that successful submission redirects user to Home Page
-        response = self.client.post(self.url
-                                    , {'username': self.new_username
-                                        , 'email': self.new_email
-                                        , 'password': self.new_password
-                                        , 'confirm_password': self.new_password})
-
-        self.assertEquals(response.status_code, 302)
-
-    def test_submission_existing_user_returns_error(self):
-
-        # test that sign-up submission for existing page returns an error
-        response = self.client.post(self.url
-                                    , {'username': self.user.username
-                                        , 'email': self.user.email
-                                        , 'password': self.user.password
-                                        , 'confirm_password': self.user.password})
-
-        error_string = 'Username or email already associated with existing account'
-        string_found = error_string in str(response.content)
-
-        self.assertTrue(string_found)
-
-    def test_correct_view(self):
-        # test that URL resolves to intended view function
-        response = self.client.get(self.url)
-        self.assertEquals(response.resolver_match.func, views.userSignup)
-
-
-    def test_submission_redirects(self):
-        # test that successful submission redirects user to Home Page
-        response = self.client.post(self.url
-                                    , {'username': self.new_username
-                                        , 'email': self.new_email
-                                        , 'password': self.new_password
-                                        , 'confirm_password': self.new_password})
-
-        self.assertEquals(response.status_code,302)
-
-
 class UserLoginTests(BaseTestClass):
 
     def setUp(self):
@@ -447,3 +387,22 @@ class UserLogoffTests(BaseTestClass):
         #test correct function
         response = self.client.get(self.url)
         self.assertEquals(response.resolver_match.func,views.userLogoff)
+
+class CreateTopicTests(BaseTestClass):
+
+    def setUp(self):
+        super().setUp()
+        self.url = reverse('boards:create-topic', kwargs={'board_name':self.board.name})
+
+    def test_contains_form(self):
+        response = self.client.get(self.url)
+        form = response.context['form']
+        self.assertIsInstance(form, CreateTopicForm)
+
+    def test_errors_invalid_post_data(self):
+        '''
+        make invalid form submission
+        check that response contains the expected error HTML
+        '''
+        response = self.client.post(self.url,{'subject':'', 'message':'Hello people!'})
+        self.assertContains(response, 'invalid-feedback')

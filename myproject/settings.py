@@ -83,12 +83,15 @@ DATABASES = {
         'ENGINE': config('ENGINE',default=''),
         'NAME': config('NAME',default=''),
         'HOST': config('HOST',default=''),
-        'OPTIONS': {
-            'driver': config('OPTIONS_driver',default='')
-        }
+        'USER':config('USER',default=''),
+        'PASSWORD':config('PASSWORD',default=''),
     }
 }
 
+if config('ENGINE',default='') == 'sql_server.pyodbc':
+    DATABASES['OPTIONS'] = {
+        'driver': config('OPTIONS_driver', default='')
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

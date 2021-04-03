@@ -1,9 +1,42 @@
+<!--
+Mock-up at:
+
+C:\Users\Ben\Documents\Side Projects\Project Workspace Root\Current\Django Progamming Tutorial (Internal) (2020-09-06)\Resources\UI Mock-ups\Create Post.drawio
+-->
+
 {% extends 'boards/base.html' %}
-{% block remaining_title %} <u><a href="{% url 'boards:topics' board_name_url_formatted %}">{{ board_name|title }}</a></u>> Create New Post {% endblock %}
+{% load static %}
+{% load gravatar_tags %}
 {% block content %}
-<form method="post" action="{% url 'boards:create-post/submit' board_name_url_formatted topic.id %}">
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+	  <li class="breadcrumb-item" aria-current="page"><a href="{% url 'boards:index' %}">Home</a></li>
+	  <li class="breadcrumb-item" aria-current="page"><a href="{% url 'boards:topics' topic.board.name_url_formatted %}">{{ topic.board.name }}</a></li>
+	  <li class="breadcrumb-item" aria-current="page">{{ topic.subject }}</li>
+  </ol>
+</nav>
+<form style="margin-bottom:50px" method="post" action="{% url 'boards:create-post/submit' board_name_url_formatted topic.id %}" novalidate>
 	{% csrf_token %}
 	{% include 'boards/form.html' %}
-	<input type="submit">
+	<button class="btn btn-primary my-2" type="submit">Create Post</button>
 </form>
+<h5>Recent Topic Posts</h5>
+{% for post in recent_posts %}
+<div class="card" style="margin-bottom:20px">
+	<div class="card-body">
+	  <div class="post-meta d-flex">
+		  <div class="profile-image-container mr-auto" style="display:inline-block">
+			  <img class="profile-image" style="height:100px" src='{{ post.created_by|gravatar }}'>
+			  <p class="image-caption text-center">{{ post.created_by }}</p>
+		  </div>
+		  <div class="post-dates">
+			  {{ post.created_at|date:"D. m/d/Y" }} at {{ post.created_at|date:"g:i a" }}
+		  </div>
+	  </div>
+	  <div class="card-text">
+		  <div class="my-4 p-2">{{ post.get_message_as_markdown }}</div>
+	  </div>
+  </div>
+</div>
+{% endfor %}
 {% endblock %}

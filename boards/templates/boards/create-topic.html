@@ -6,6 +6,6 @@
 <form method='POST' action="{% url 'boards:create-topic/submit' board_name_url_formatted %}" novalidate>
 	{% csrf_token %}
 	{% include 'boards/form.html' %}
-	<br><input type="submit">
+	<br><button class="btn btn-primary" type="submit">Start Topic</button>
 </form>
 {% endblock %}

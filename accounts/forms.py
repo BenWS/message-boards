@@ -1,39 +1,28 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import authenticate
 
-class SignUpForm(forms.ModelForm):
-    # TODO: Store as reference - https://docs.djangoproject.com/en/3.0/ref/forms/validation/#cleaning-and-validating-fields-that-depend-on-each-other
-    confirm_password = forms.CharField(widget=forms.PasswordInput)
-    password = forms.CharField(widget=forms.PasswordInput)
-    '''
-    Create validation logic, and raise custom error if any one of those validations
-    is not successful 
-    
-    - validation that passwords match
-    - validation that user does not already exist 
-    - validation that email is valid  
-    '''
+class UserSignupForm(UserCreationForm):
+    email = forms.CharField(required=True, label='Email address', widget=forms.EmailInput)
     class Meta:
         model = User
-        fields = ['username','email','password','confirm_password']
+        fields = ['username','email', 'password1', 'password2']
+
+class UserLoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        fields = ['username','password']
 
     def clean(self):
-        cleaned_data = super().clean()
-        confirm_password = cleaned_data.get('confirm_password')
-        password = cleaned_data.get('password')
-        username = cleaned_data.get('username')
-        email = cleaned_data.get('email')
+        super().clean()
 
-        if confirm_password != password:
-            self.add_error('confirm_password','Password fields do not match')
-            self.add_error('password', 'Password fields do not match')
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        user = authenticate(username=username,password=password)
 
-        if User.objects.filter(username=username) \
-                or User.objects.filter(email=email):
-            raise forms.ValidationError ('User with that username or email address already exists')
-
-        if User.objects.filter(username=username):
-            self.add_error('username', 'User with that username already existssssss.')
-
-        if User.objects.filter(email=email):
-            self.add_error('email', 'User with that email address already exists.')
+        if user is None:
+            self.add_error('username','Username/password combination does not match any record in our system')
+            self.add_error('password','Username/password combination does not match any record in our system')

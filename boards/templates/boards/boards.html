@@ -1,24 +1,30 @@
 {% extends 'boards/base.html' %}
 
-{% block remaining_content %} test {% endblock %}
 {% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" aria-current="page">Home</li>
+  </ol>
+</nav>
 <div class="py-3">
 	<p> Welcome to the Backpacking Forum. You may view or view or create posts in any of the Message Boards listed below.</p><p>Please post in accordance to the <a href=""> site rules <a/></p>
 </div>
-<table>
+<table class="table table-striped">
 	<thead>
 		<tr>
 			<th>Board</th>
-			<th># of Topics</th>
-			<th>Last Post</th>
+			<th>Topics</th>
+			<th>Posts</th>
+			<th>Latest Post</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for board in boards %}
 		<tr>
 			<td><a href="{% url 'boards:topics' board.name_url_formatted  %}">{{ board.name }}</a><br>{{ board.description }}</td>
-			<td><br>35</td>
-			<td>OutdoorsExplorer at 10:01 AM on 9/19/20</td>
+			<td>{{ board.topics.count }}</td>
+			<td>{{ board.get_posts_count }}</td>
+			<td>{{ board.get_latest_post.created_by }} at {{ board.get_latest_post.created_at|date:"g:i a" }} on {{ board.get_latest_post.created_at|date:"D. m/d/y" }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>

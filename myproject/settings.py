@@ -1,3 +1,5 @@
+from django.shortcuts import reverse
+
 """
 Django settings for myproject project.
 
@@ -21,7 +23,7 @@ SECRET_KEY = 'cqp-bk_gv$-sxjdtp5+9#u^=*i&-+&p9(9*nm(mb@th8l!b#mz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -34,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'boards',
     'accounts',
-    'widget_tweaks'
+    'widget_tweaks',
+    'django.contrib.humanize'
 ]
 
 MIDDLEWARE = [
@@ -46,6 +49,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+LOGIN_URL = '/accounts/log-in'
+
+LOGIN_REDIRECT_URL = '/boards/'
 
 ROOT_URLCONF = 'myproject.urls'
 
@@ -120,3 +127,5 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

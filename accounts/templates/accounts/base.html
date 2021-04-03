@@ -1,0 +1,14 @@
+{% load static %}
+<html>
+{% include 'boards/head.html'%}
+<body style="background-image:url('{% static 'images/topography.png' %}')">
+	<div class="container" style="width:50rem">
+		<div class="card mt-5">
+			<div class="card-body">
+				<h2 class="card-title text-center">{% block title %}{% endblock %}</h2>
+				{% block content %}
+                {% endblock %}
+			</div>
+		</div>
+	</div>
+</html>

@@ -1,29 +1,29 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="{% url 'boards:index' %}">Backpacking Forum</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'boards:index' %}">Backpacking Forum</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item dropdown active">
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
         {% if user.is_authenticated %}
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Signed in as <strong>{{ user.username }}</strong>
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="{% url 'boards:log-off'%}">Sign-out</a>
-        </div>
+        <li class="nav-item dropdown active">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Signed in as <strong>{{ user.username }}</strong>
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="{% url 'accounts:my-account' %}">My Account</a>
+            <a class="dropdown-item" href="{% url 'password_reset' %}">Change Password</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'accounts:log-off'%}">Sign-out</a>
+          </div>
+        </li>
         {% else %}
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Not logged-in
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="{% url 'boards:login'%}">Log-in</a>
-          <a class="dropdown-item" href="{% url 'accounts:sign-up'%}">Sign-up</a>
-        </div>
+        <a class="btn btn-primary mr-2" href="{% url 'accounts:login'%}" role="button">Log-in</a>
+        <a class="btn btn-primary" href="{% url 'accounts:sign-up'%}" role="button">Sign-up</a>
         {% endif %}
-      </li>
-    </ul>
+      </ul>
+    </div>
   </div>
 </nav>

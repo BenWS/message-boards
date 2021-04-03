@@ -1,27 +1,40 @@
 {% extends 'boards/base.html' %}
+{% load humanize %}
 
 {% block remaining_title %}{{ board_name|title }}{% endblock %}
 {% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+	  <li class="breadcrumb-item" aria-current="page"><a href="{% url 'boards:index' %}">Home</a></li>
+	  <li class="breadcrumb-item" aria-current="page">{{ board_name }}</li>
+  </ol>
+</nav>
 <p>You may either view a post below </p>
-<form action="{% url 'boards:create-topic' board_name_url_formatted %}"><input type="submit" value="Create New Topic"></form>
-<table>
+<form action="{% url 'boards:create-topic' board_name_url_formatted %}"><button class="btn btn-primary" type="submit">Create New Topic</button></form>
+<table class="table table-striped">
 	<thead>
 		<tr>
 			<th>Topic</th>
 			<th>Started By</th>
-			<th># of Posts</th>
+			<th>Replies</th>
+			<th>Views</th>
 			<th>Last Post</th>
 		</tr>
 	</thead>
 	<tbody>
-		{% for topic in topics %}
+		{% for topic in page_obj %}
 		<tr>
 			<td><a href="{% url 'boards:view-topic' board_name_url_formatted topic.id %}">{{ topic.subject }}</a></td>
 			<td>{{ topic.created_by }}</td>
-			<td>{{ topic.posts.count }}</td>
-			<td>{{ topic.last_post_user }} at {{ topic.last_post_time }}</td>
+			<td>{{ topic.get_count_replies }}</td>
+			<td>{{ topic.views }}</td>
+<!--			#TODO: The last post date displayed doesn't seem accurate - troubleshoot -->
+			<td>{{ topic.get_last_post_user }}, {{ topic.updated_at|naturaltime }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
 </table>
+{% if page_obj.has_other_pages %}
+{% include 'boards/pagination.html' with object_type='Topics' %}
+{% endif %}
 {% endblock %}

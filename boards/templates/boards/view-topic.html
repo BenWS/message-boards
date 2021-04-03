@@ -1,34 +1,79 @@
+<!--
+Resources: Implement Mock-up at "C:\Users\Ben\Documents\Side Projects\Project Workspace Root\Current\Django Progamming Tutorial (Internal) (2020-09-06)\Resources\UI Mock-ups\View Topic.drawio"
+
+-->
 {% extends 'boards/base.html '%}
-{% block remaining_title%}
-	<u><a href="{% url 'boards:topics' board.name_url_formatted %}">{{ board.name }}</a></u> > {{ topic.subject }}
-{% endblock %}
+{% load static %}
+{% load humanize %}
+{% load gravatar_tags %}
 {% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+	  <li class="breadcrumb-item" aria-current="page"><a href="{% url 'boards:index' %}">Home</a></li>
+	  <li class="breadcrumb-item" aria-current="page"><a href="{% url 'boards:topics' board.name_url_formatted %}">{{ board.name }}</a></li>
+	  <li class="breadcrumb-item" aria-current="page">{{ topic.subject }}</li>
+  </ol>
+</nav>
 <form method="get"
-	  class="mt-4"
-	  action="{% url 'boards:create-post' board.name_url_formatted topic.id %}">
+	  class="mt-4 mb-4"
+	  action="{% url 'boards:create-post' topic.board.name_url_formatted topic.id %}">
 	<input type="hidden" name="post_id" value="">
-	<input type="submit" value="Reply">
+	<button type="submit" class="btn btn-primary">Create New Post</button>
 </form>
-{% for post in posts %}
-<div class="user-post">
-	<div class="user-post-inner" style="position:relative">
-		<div class="user-post-meta" style="display:inline-block">
-			<p>User: {{ post.created_by }} at {{ post.created_at}}
-			<br>Subject: {{ post.subject }}</p>
+<div>
+	{% for post in posts %}
+	{% if post_original.id == post.id %}
+	<div class="card" style="margin-bottom:50px">
+	{% else %}
+	<div class="card" style="margin-bottom:20px">
+	{% endif %}
+		{% if post_original.id == post.id %}
+		<div class="card-header">
+			{{ topic.subject }}
 		</div>
-		<div class="user-post-controls" style="display:inline-block; position: absolute; top:0px; right:0px">
-			<form method="get" action="{% url 'boards:edit-post' board.name_url_formatted topic.id post.id %}" style="display:inline-block">
-				<input type="submit" value="Edit">
-			</form>
-			<form method="get" action="{% url 'boards:create-post' board.name_url_formatted topic.id %}" style="display:inline-block">
-				<input type="submit" value="Reply">
-				<input type="hidden" name="post_id" value="{{ post.id }}">
-			</form>
-		</div>
-		<p>
-			{{ post.message }}
-		</p>
+		{% endif %}
+		<div class="card-body">
+		  <div class="post-meta d-flex">
+		<!--
+		#TODO: Document the below
+
+		Described here: the mechanics of element positioning within this div.
+
+		The (abbreviated) layout of this div is as such:
+
+		post-meta
+		  profile-image-container (inline-block)
+			profile-image (inline-block)
+			profile-image-caption (block)
+		  post-dates
+
+		 Although an inline-block style isn't explicitly set here on the 'profile-image-container', flex display (enabled in the parent div's class) seems to apply inline-block style to the child elements, as the default. 'profile-image-container' is necessary to center its contained 'profile-image-caption'. An inline-block element will only be as wide as its widest child. For that reason, we can position 'profile-image-caption' within the center of the 'profile-image-container', in the case that the 'profile-image' is the widest of the two element.And, because the profile-image-caption is a block element; it's knocked to the line below 'profile-image' (saving us from having to apply a <br> tag).
+
+		Applying mr-auto to profile-image-container tells the browser to use whatever width is available for the remainder of the line for the parent container (including consideration of the other sibling divs of profile-image-container.
+		-->
+			  <div class="profile-image-container mr-auto" style="display:inline-block">
+				  <img class="profile-image" style="height:100px" src='{{ post.created_by|gravatar }}'>
+				  <p class="image-caption text-center">{{ post.created_by.username }}</p>
+			  </div>
+			  <div class="post-dates">
+				  {{ post.created_at|naturaltime }}
+			  </div>
+		  </div>
+		  <div class="card-text">
+			  <div class="my-4 p-2">{{ post.get_message_as_markdown }} </div>
+			  <form method="get" action="{% url 'boards:create-post' topic.board.name_url_formatted topic.id %}" style="display:inline-block">
+					<button type="submit" class="btn btn-primary">Reply</button>
+					<input type="hidden" name="post_id" value="{{ post.id }}">
+				</form>
+			  {% if current_user == post.created_by %}
+			  <form method="get" action="{% url 'boards:edit-post' topic.board.name_url_formatted topic.id post.id %}" style="display:inline-block">
+				  <button type="submit" class="btn btn-primary">Edit</button>
+				</form>
+			  {% endif %}
+		  </div>
+	  </div>
 	</div>
+	{% endfor %}
 </div>
-{% endfor %}
+{% include 'boards/pagination.html' with object_type='Posts' %}
 {% endblock %}

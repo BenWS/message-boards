@@ -1,0 +1,14 @@
+Django==3
+Markdown==3.3.4
+asgiref==3.2.10
+config==0.5.0.post0
+dj-database-url==0.5.0
+django-mssql-backend==2.8.1
+importlib-metadata==3.8.1
+pip==9.0.1
+pyodbc==4.0.30
+python-decouple==3.4
+setuptools==28.8.0
+sqlparse==0.3.1
+typing-extensions==3.7.4.3
+zipp==3.4.1

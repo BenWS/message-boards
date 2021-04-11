@@ -1,5 +1,6 @@
 from django.shortcuts import reverse
-from decouple import config
+from decouple import config, Csv
+import dj_database_url
 
 """
 Django settings for myproject project.
@@ -21,10 +22,9 @@ SECRET_KEY=config('SECRET_KEY',default='')
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG',default='')
+DEBUG = config('DEBUG',default=False)
 
-ALLOWED_HOSTS = ['127.0.0.1']
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 # Application definition
 INSTALLED_APPS = [
@@ -78,20 +78,29 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': config('ENGINE',default=''),
-        'NAME': config('NAME',default=''),
-        'HOST': config('HOST',default=''),
-        'USER':config('USER',default=''),
-        'PASSWORD':config('PASSWORD',default=''),
-    }
-}
-
 if config('ENGINE',default='') == 'sql_server.pyodbc':
+
+    DATABASES = {
+        'default': {
+            'ENGINE': config('ENGINE',default=''),
+            'NAME': config('NAME',default=''),
+            'HOST': config('HOST',default=''),
+            'USER':config('USER',default=''),
+            'PASSWORD':config('PASSWORD',default=''),
+        }
+    }
+
     DATABASES['OPTIONS'] = {
         'driver': config('OPTIONS_driver', default='')
     }
+
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL')
+        )
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

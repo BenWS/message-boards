@@ -21,6 +21,7 @@
  - [Background Design Resource](https://www.toptal.com/designers/subtlepatterns/)
  - [Topography Pattern](https://www.toptal.com/designers/subtlepatterns/topography/)
  - [Bootstrap Templates](https://startbootstrap.com/themes)
+ - [Static File Deployment](https://docs.djangoproject.com/en/3.0/howto/static-files/deployment/)
 
 # Django Tests
  - The test client and its methods, attributes here:
